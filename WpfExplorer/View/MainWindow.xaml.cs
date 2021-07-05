@@ -24,7 +24,7 @@ namespace WpfExplorer
         public static DriveInfo[] allDrives; 
         public MainWindow()
         {
-            fs.checkConfig();
+            fs.checkFiles();
             InitializeComponent();
 
             if(main.PingDB()) { TB_Ping.Text = "Connected"; }
@@ -34,6 +34,16 @@ namespace WpfExplorer
             dT.Interval = new TimeSpan(0, 0, 1);
             dT.Start();
 
+            var xx = fs.readIndexedFiles();
+            var yy = xx.ToArray<main.FileStructure>();
+            string res = "";
+            for(int i = 0; i < yy.Length; i++)
+            {
+                res += yy[i].Filename+"\n";
+                res += yy[i].Path+"\n\n";
+
+            }
+            MessageBox.Show(res);
             allDrives = DriveInfo.GetDrives();
             //allDrives = DriveInfo.GetDrives();
 
@@ -60,6 +70,7 @@ namespace WpfExplorer
         }
 
         private void SetPing(object sender, EventArgs e)
+        
         {
             double PingTime = db.PingDB();
             TB_PingTime.Text = $"{PingTime}ms";
@@ -94,15 +105,8 @@ namespace WpfExplorer
             C_TFiles ProcessedFiles = new C_TFiles();
             for (int i = 0; i < TotalFiles; i++)
             {
-                //fs.AddToIndex(files[i]);
-                Thread.Sleep(100);
-                switch (fs.AddToIndex(files[i]))
-                {
-                    case -1: MessageBox.Show($"Die Datei {Path.GetFileName(files[i])} konnte nicht indiziert werden, da sie schon vorhanden ist"); ProcessedFiles.FilesErr.Add(new C_Files { FileName = Path.GetFileName(files[i]), Path = files[i]}); break; //Datei schon vorhanden
-                    case -255: break; //Exception
-                    case 0: break;
-
-                }
+                //Thread.Sleep(100);
+                fs.AddToIndex(files[i]);
                 SetIndexProgress(files[i], i, TotalFiles);
             }
             MessageBox.Show(TotalFiles.ToString() + " Dateien erfolgreich hinzugefügt");
@@ -127,13 +131,6 @@ namespace WpfExplorer
         //}
 
         public static void AddToGrid(string FileName, string FullPath)
-        {
-            
-        }
-
-        ICommand _addToExceptList;
-
-        public ICommand AddToExceptionList
         {
             get
             {
@@ -177,8 +174,9 @@ namespace WpfExplorer
                 TextBlock tb = new TextBlock();
                 tb.Text = res + "\n";
 
-                tb.MouseLeftButtonUp += Tb_MouseLeftButtonUp;
-                GD_Dateiausgabe.Children.Add(tb);
+                System.Windows.Controls.TextBox txt = new System.Windows.Controls.TextBox();
+                main.FileStructure oof = fs.searchFile(_.Paths[i].FileName, false);
+                txt.Text += $"\n\n{oof.Filename} in {oof.Path}";
             }
 
 

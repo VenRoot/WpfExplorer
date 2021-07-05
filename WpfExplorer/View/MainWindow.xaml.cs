@@ -9,8 +9,6 @@ using System.IO;
 using System.Threading;
 using System.ComponentModel;
 using System.Windows.Controls;
-using System.Windows.Input;
-using CommandHelper;
 
 namespace WpfExplorer 
 {
@@ -34,16 +32,6 @@ namespace WpfExplorer
             dT.Interval = new TimeSpan(0, 0, 1);
             dT.Start();
 
-            var xx = fs.readIndexedFiles();
-            var yy = xx.ToArray<main.FileStructure>();
-            string res = "";
-            for(int i = 0; i < yy.Length; i++)
-            {
-                res += yy[i].Filename+"\n";
-                res += yy[i].Path+"\n\n";
-
-            }
-            MessageBox.Show(res);
             allDrives = DriveInfo.GetDrives();
             //allDrives = DriveInfo.GetDrives();
 
@@ -67,10 +55,22 @@ namespace WpfExplorer
 
             //}
             //MessageBox.Show(res);
+
+            var File = fs.searchFile("bdhfszifzui1.txt", false);
+            if (File.Count == 0) MessageBox.Show("Keine Dateien gefunden");
+            else
+            {
+                string res = "";
+                foreach (var v in File)
+                {
+                    res += v.Filename + "\n";
+                    res += v.Path + "\n\n";
+                }
+                MessageBox.Show(res);
+            }
         }
 
         private void SetPing(object sender, EventArgs e)
-        
         {
             double PingTime = db.PingDB();
             TB_PingTime.Text = $"{PingTime}ms";
@@ -174,9 +174,8 @@ namespace WpfExplorer
                 TextBlock tb = new TextBlock();
                 tb.Text = res + "\n";
 
-                System.Windows.Controls.TextBox txt = new System.Windows.Controls.TextBox();
-                main.FileStructure oof = fs.searchFile(_.Paths[i].FileName, false);
-                txt.Text += $"\n\n{oof.Filename} in {oof.Path}";
+                tb.MouseLeftButtonUp += Tb_MouseLeftButtonUp;
+                GD_Dateiausgabe.Children.Add(tb);
             }
 
 
@@ -200,11 +199,6 @@ namespace WpfExplorer
         private void Tb_MouseLeftButtonUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             //Hier ein Event einfügen, welches den Pfad des angeklickten TextBlocks öffnet
-        }
-
-        public void tb_AddExceptions_Click(object sender, RoutedEventArgs e)
-        {
-
         }
 
         private void Detect_Click(object sender, RoutedEventArgs e)

@@ -7,11 +7,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using System.Windows;
+using System.ComponentModel;
 using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Interop;
-#pragma warning disable 0649
 
 namespace WpfExplorer
 {
@@ -28,16 +25,12 @@ namespace WpfExplorer
             fs.checkConfig();
             InitializeComponent();
 
-            db.initDB();
-            if (main.PingDB()) { TB_Ping.Text = "Connected"; }
+            if(main.PingDB()) { TB_Ping.Text = "Connected"; }
             else { TB_Ping.Text = "Connection failed..."; main.ReportError(new Exception("Ping not successfull")); return; }
             System.Windows.Threading.DispatcherTimer dT = new System.Windows.Threading.DispatcherTimer();
             dT.Tick += new EventHandler(SetPing);
             dT.Interval = new TimeSpan(0, 0, 1);
             dT.Start();
-
-            List<string> query = db.myquery("SELECT version();");
-            MessageBox.Show("MySQL " + query[0]);
 
             allDrives = DriveInfo.GetDrives();
             //allDrives = DriveInfo.GetDrives();
@@ -62,6 +55,19 @@ namespace WpfExplorer
 
             //}
             //MessageBox.Show(res);
+
+            var File = fs.searchFile("bdhfszifzui1.txt", false);
+            if (File.Count == 0) MessageBox.Show("Keine Dateien gefunden");
+            else
+            {
+                string res = "";
+                foreach (var v in File)
+                {
+                    res += v.Filename + "\n";
+                    res += v.Path + "\n\n";
+                }
+                MessageBox.Show(res);
+            }
         }
 
         private void SetPing(object sender, EventArgs e)
@@ -178,84 +184,51 @@ namespace WpfExplorer
 
         }
 
-        ICommand _addToExceptList;
-
-        public ICommand AddToExceptionList
+        private void tb_Search_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
         {
-            get
+            GD_Dateiausgabe.Children.Clear();
+
+            /** Nichts eingegeben = nichts anzeigen */
+            if (tb_Search.Text.Length == 0) return;
+            /**Es sollten zuerst die Dateinamen und DANN erst Dateien mit dem Inhalt durchsucht werden */
+
+            var File = fs.searchFile(tb_Search.Text, false);
+            if(File.Count != 0)
             {
-                if (_addToExceptList == null) _addToExceptList = new RelayCommand(e => ToExceptionList());
-                return _addToExceptList;
+                string res = "";
+                foreach (var v in File)
+                {
+                    res += v.Filename + "\n";
+                    res += v.Path + "\n\n";
+                }
+                TextBlock tb = new TextBlock();
+                tb.Text = res + "\n";
+
+                tb.MouseLeftButtonUp += Tb_MouseLeftButtonUp;
+                GD_Dateiausgabe.Children.Add(tb);
             }
+
+
+            //fs.C_IZ _ = db.getConf<fs.C_IZ>("database");
+            //for (int i = 0; i < _.Paths.Length; i++)
+            //{
+
+            //    System.Windows.Controls.TextBox txt = new System.Windows.Controls.TextBox();
+            //    List<main.FileStructure> oof = fs.searchFile(tb_Search.Text, false);
+            //    oof.ForEach((p) =>
+            //    {
+            //        AddToGrid(p.Filename, p.Path);
+            //        txt.Text += $"\n\n{p.Filename} in {p.Path}";
+            //    });
+
+            //}
+
+
         }
-
-
-        private void ToExceptionList()
-        {
-            List<string> _ = GetExceptionList();
-            //foreach(var d in _) ListBox.Items.Add(d);
-            return;
-        }
-
-
-        public List<string> GetExceptionList()
-        {
-            return new main().getMVVM().FileExceptionList.ToList();
-            //return ListBox.Items.Cast<string>().ToList();
-        }
-
-
-        //private void tb_Search_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
-        //{
-        //    GD_Dateiausgabe.Children.Clear();
-
-        //    /** Nichts eingegeben = nichts anzeigen */
-        //    if (tb_Search.Text.Length == 0) return;
-        //    /**Es sollten zuerst die Dateinamen und DANN erst Dateien mit dem Inhalt durchsucht werden */
-
-        //    var File = fs.searchFile(tb_Search.Text, false);
-        //    if (File.Count != 0)
-        //    {
-        //        string res = "";
-        //        foreach (var v in File)
-        //        {
-        //            res += v.Filename + "\n";
-        //            res += v.Path + "\n\n";
-        //        }
-        //        TextBlock tb = new TextBlock();
-        //        //ObservableCollection tb = new System.Collections.ObjectModel.ObservableCollection();
-        //        tb.Text = res + "\n";
-
-        //        tb.MouseLeftButtonUp += Tb_MouseLeftButtonUp;
-        //        GD_Dateiausgabe.Children.Add(tb);
-        //    }
-
-
-        //    //fs.C_IZ _ = db.getConf<fs.C_IZ>("database");
-        //    //for (int i = 0; i < _.Paths.Length; i++)
-        //    //{
-
-        //    //    System.Windows.Controls.TextBox txt = new System.Windows.Controls.TextBox();
-        //    //    List<main.FileStructure> oof = fs.searchFile(tb_Search.Text, false);
-        //    //    oof.ForEach((p) =>
-        //    //    {
-        //    //        AddToGrid(p.Filename, p.Path);
-        //    //        txt.Text += $"\n\n{p.Filename} in {p.Path}";
-        //    //    });
-
-        //    //}
-
-
-        //}
 
         private void Tb_MouseLeftButtonUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             //Hier ein Event einfügen, welches den Pfad des angeklickten TextBlocks öffnet
-        }
-
-        public void tb_AddExceptions_Click(object sender, RoutedEventArgs e)
-        {
-
         }
 
         private void Detect_Click(object sender, RoutedEventArgs e)

@@ -7,9 +7,6 @@ using MySql.Data;
 
 using System.Net.NetworkInformation;
 using System.Windows;
-using System.Text.Json;
-using Newtonsoft.Json.Linq;
-
 
 namespace WpfExplorer
 {
@@ -20,7 +17,7 @@ namespace WpfExplorer
         {
             string dir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
 
-            using (StreamReader r = new StreamReader(dir+$"\\..\\..\\..\\{name}.json"))
+            using (StreamReader r = new StreamReader(MainWindow.CONFIG_LOCATIONS+$"{name}.json"))
             {
                 string json = r.ReadToEnd();
                 try
@@ -85,7 +82,6 @@ namespace WpfExplorer
 
             //MessageBox.Show(reader.GetString(0));
         }
-
 
         public class DBConf
         {

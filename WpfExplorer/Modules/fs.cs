@@ -16,7 +16,7 @@ namespace WpfExplorer
 
 
         /** Prüft alle Dateien und erstellt diese, falls nicht vorhanden. Läuft im neuen Thread */
-        public static void checkConfig()
+        public static void checkFiles()
         {
             Task.Run(() =>
             {

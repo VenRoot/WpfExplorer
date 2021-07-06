@@ -56,6 +56,8 @@ namespace WpfExplorer
             {
                 throw e;
             }
+            
+            
         }
         
         public static List<string> query(string command)

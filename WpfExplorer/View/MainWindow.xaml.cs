@@ -118,7 +118,7 @@ namespace WpfExplorer
                 Thread.Sleep(100);
                 switch (fs.AddToIndex(files[i]))
                 {
-                    case -1: MessageBox.Show($"Die Datei {Path.GetFileName(files[i])} konnte nicht indiziert werden, da sie schon vorhanden ist"); ProcessedFiles.FilesErr.Add(new C_Files { FileName = Path.GetFileName(files[i]), Path = files[i] }); break; //Datei schon vorhanden
+                    case -1: MessageBox.Show($"Die Datei {Path.GetFileName(files[i])} konnte nicht indiziert werden, da sie schon vorhanden ist"); ProcessedFiles.FilesErr.Add(new C_Files { FileName = Path.GetFileName(files[i]), Path = files[i]}); break; //Datei schon vorhanden
                     case -255: break; //Exception
                     case 0: break;
 
@@ -126,6 +126,19 @@ namespace WpfExplorer
                 SetIndexProgress(files[i], i, TotalFiles);
             }
             MessageBox.Show(TotalFiles.ToString() + " Dateien erfolgreich hinzugefügt");
+        }
+
+
+        class C_TFiles
+        {
+            public List<C_Files> FilesOk;
+            public List<C_Files> FilesErr;
+        }
+
+        public class C_Files
+        {
+            public string FileName;
+            public string Path;
         }
 
         //private void OnProgressChanged(object sender, ProgressChangedEventArgs e)
@@ -274,7 +287,7 @@ namespace WpfExplorer
 
         }
 
-
+        
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {

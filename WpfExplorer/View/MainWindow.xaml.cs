@@ -112,19 +112,6 @@ namespace WpfExplorer
             MessageBox.Show(TotalFiles.ToString() + " Dateien erfolgreich hinzugefügt");
         }
 
-
-        class C_TFiles
-        {
-            public List<C_Files> FilesOk;
-            public List<C_Files> FilesErr;
-        }
-
-        public class C_Files
-        {
-            public string FileName;
-            public string Path;
-        }
-
         //private void OnProgressChanged(object sender, ProgressChangedEventArgs e)
         //{
         //    SetIndexProgress()
@@ -132,19 +119,7 @@ namespace WpfExplorer
 
         public static void AddToGrid(string FileName, string FullPath)
         {
-            get
-            {
-                if (_addToExceptList == null) _addToExceptList = new RelayCommand(e => ToExceptionList());
-                return _addToExceptList;
-            }
-        }
-
-
-        private void ToExceptionList()
-        {
-            List<string> _ = GetExceptionList();
-            foreach(var d in _) ListBox.Items.Add(d);
-            return;
+            
         }
 
 
@@ -202,11 +177,6 @@ namespace WpfExplorer
         }
 
         public void tb_AddExceptions_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
-
-        public void Index_Click(object sender, RoutedEventArgs e)
         {
 
         }

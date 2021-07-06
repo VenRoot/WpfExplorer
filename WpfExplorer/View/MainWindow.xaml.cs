@@ -75,10 +75,8 @@ namespace WpfExplorer
             double PingTime = db.PingDB();
             TB_PingTime.Text = $"{PingTime}ms";
         }
-
-        List<string> ExcList;
         private void Index_Click(object sender, RoutedEventArgs e)
-        {
+        { 
             BackgroundWorker worker = new BackgroundWorker();
             _PATH = main.getPathDialog();
             ExcList = GetExceptionList();
@@ -130,50 +128,6 @@ namespace WpfExplorer
             MessageBox.Show(TotalFiles.ToString() + " Dateien erfolgreich hinzugefügt");
         }
 
-        private string[] checkForExcpetionlist(string[] files)
-        {
-            /*
-             * Wenn el[i][0] == *, el.Includes(el[i][el[i]-1]
-             * 
-             * prüfe ob Path.GetExtension(files[i]) != '' && ob in el, dann entferne
-             */
-
-            List<string> el = ExcList;
-            List<string> filesList = files.ToList();
-
-            //Entferne alle Dateitypen in der Liste
-            for (int i = 0; i < filesList.Count; i++)
-            {
-                string ext = Path.GetExtension(filesList[i]);
-                if (ext.Length > 0 && el.Contains(ext)) filesList.RemoveAt(i);
-            }
-
-            string[] _el = el.ToArray();
-            //Enterne alle Verzeichnisse 
-            for (int i = 0; i < _el.Length; i++)
-            {
-                for (int o = 0; o < filesList.Count; o++)
-                {
-                    //Prüfe, ob der Eintrag ein "Verzeichnis/" ist und prüfe anschließend, ob die Datei in solch einem Verzeichnis ist
-                    if (_el[i].EndsWith("/") && filesList[o].Replace("\\", "/").Contains(_el[i])) filesList.RemoveAt(o);
-                }
-            }
-
-            return filesList.ToArray();
-        }
-
-        class C_TFiles
-        {
-            public List<C_Files> FilesOk;
-            public List<C_Files> FilesErr;
-        }
-
-        public class C_Files
-        {
-            public string FileName;
-            public string Path;
-        }
-
         //private void OnProgressChanged(object sender, ProgressChangedEventArgs e)
         //{
         //    SetIndexProgress()
@@ -181,7 +135,7 @@ namespace WpfExplorer
 
         public static void AddToGrid(string FileName, string FullPath)
         {
-
+            
         }
 
         private void tb_Search_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
@@ -232,11 +186,6 @@ namespace WpfExplorer
         }
 
         public void tb_AddExceptions_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
-
-        public void Index_Click(object sender, RoutedEventArgs e)
         {
 
         }

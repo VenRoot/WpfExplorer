@@ -1,5 +1,17 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Management;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.IO;
+using GalaSoft.MvvmLight.Command;
+using GalaSoft.MvvmLight;
+using System.Windows.Input;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Windows.Interop;
 
 namespace WpfExplorer
 {
@@ -42,7 +54,6 @@ namespace WpfExplorer
         private const int DbtDevtypDeviceinterface = 5;
         private static readonly Guid GuidDevinterfaceUSBDevice = new Guid("A5DCBF10-6530-11D2-901F-00C04FB951ED"); // USB devices
         private static IntPtr notificationHandle;
-
         public static void RegisterUsbDeviceNotification(IntPtr windowHandle)
         {
             USBBroadcastinterface dbi = new USBBroadcastinterface

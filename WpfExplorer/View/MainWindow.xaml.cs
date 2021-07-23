@@ -7,13 +7,13 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using System.ComponentModel;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using CommandHelper;
+using System.Windows.Interop;
 #pragma warning disable 0649
 
-namespace WpfExplorer 
+namespace WpfExplorer
 {
     /// <summary>
     /// Interaktionslogik für MainWindow.xaml
@@ -22,14 +22,14 @@ namespace WpfExplorer
     {
         string _PATH = "";
         public static string CONFIG_LOCATIONS = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "WpfExplorer\\");
-        public static DriveInfo[] allDrives; 
+        public static DriveInfo[] allDrives;
         public MainWindow()
         {
             fs.checkConfig();
             InitializeComponent();
 
             db.initDB();
-            if(main.PingDB()) { TB_Ping.Text = "Connected"; }
+            if (main.PingDB()) { TB_Ping.Text = "Connected"; }
             else { TB_Ping.Text = "Connection failed..."; main.ReportError(new Exception("Ping not successfull")); return; }
             System.Windows.Threading.DispatcherTimer dT = new System.Windows.Threading.DispatcherTimer();
             dT.Tick += new EventHandler(SetPing);
@@ -37,7 +37,7 @@ namespace WpfExplorer
             dT.Start();
 
             List<string> query = db.myquery("SELECT version();");
-            MessageBox.Show("MySQL "+query[0]);
+            MessageBox.Show("MySQL " + query[0]);
 
             allDrives = DriveInfo.GetDrives();
             //allDrives = DriveInfo.GetDrives();
@@ -70,8 +70,9 @@ namespace WpfExplorer
             TB_PingTime.Text = $"{PingTime}ms";
         }
 
+        List<string> ExcList;
         private void Index_Click(object sender, RoutedEventArgs e)
-        { 
+        {
             BackgroundWorker worker = new BackgroundWorker();
             _PATH = main.getPathDialog();
             ExcList = GetExceptionList();
@@ -113,7 +114,7 @@ namespace WpfExplorer
                 Thread.Sleep(100);
                 switch (fs.AddToIndex(files[i]))
                 {
-                    case -1: MessageBox.Show($"Die Datei {Path.GetFileName(files[i])} konnte nicht indiziert werden, da sie schon vorhanden ist"); ProcessedFiles.FilesErr.Add(new C_Files { FileName = Path.GetFileName(files[i]), Path = files[i]}); break; //Datei schon vorhanden
+                    case -1: MessageBox.Show($"Die Datei {Path.GetFileName(files[i])} konnte nicht indiziert werden, da sie schon vorhanden ist"); ProcessedFiles.FilesErr.Add(new C_Files { FileName = Path.GetFileName(files[i]), Path = files[i] }); break; //Datei schon vorhanden
                     case -255: break; //Exception
                     case 0: break;
 
@@ -123,6 +124,37 @@ namespace WpfExplorer
             MessageBox.Show(TotalFiles.ToString() + " Dateien erfolgreich hinzugefügt");
         }
 
+        private string[] checkForExcpetionlist(string[] files)
+        {
+            /*
+             * Wenn el[i][0] == *, el.Includes(el[i][el[i]-1]
+             * 
+             * prüfe ob Path.GetExtension(files[i]) != '' && ob in el, dann entferne
+             */
+
+            List<string> el = ExcList;
+            List<string> filesList = files.ToList();
+
+            //Entferne alle Dateitypen in der Liste
+            for (int i = 0; i < filesList.Count; i++)
+            {
+                string ext = Path.GetExtension(filesList[i]);
+                if (ext.Length > 0 && el.Contains(ext)) filesList.RemoveAt(i);
+            }
+
+            string[] _el = el.ToArray();
+            //Enterne alle Verzeichnisse 
+            for (int i = 0; i < _el.Length; i++)
+            {
+                for (int o = 0; o < filesList.Count; o++)
+                {
+                    //Prüfe, ob der Eintrag ein "Verzeichnis/" ist und prüfe anschließend, ob die Datei in solch einem Verzeichnis ist
+                    if (_el[i].EndsWith("/") && filesList[o].Replace("\\", "/").Contains(_el[i])) filesList.RemoveAt(o);
+                }
+            }
+
+            return filesList.ToArray();
+        }
 
         class C_TFiles
         {
@@ -143,7 +175,7 @@ namespace WpfExplorer
 
         public static void AddToGrid(string FileName, string FullPath)
         {
-            
+
         }
 
         ICommand _addToExceptList;
@@ -168,7 +200,7 @@ namespace WpfExplorer
 
         public List<string> GetExceptionList()
         {
-            return new List<string> { };
+            return new main().getMVVM().FileExceptionList.ToList();
             //return ListBox.Items.Cast<string>().ToList();
         }
 
@@ -182,7 +214,7 @@ namespace WpfExplorer
             /**Es sollten zuerst die Dateinamen und DANN erst Dateien mit dem Inhalt durchsucht werden */
 
             var File = fs.searchFile(tb_Search.Text, false);
-            if(File.Count != 0)
+            if (File.Count != 0)
             {
                 string res = "";
                 foreach (var v in File)
@@ -191,6 +223,7 @@ namespace WpfExplorer
                     res += v.Path + "\n\n";
                 }
                 TextBlock tb = new TextBlock();
+                //ObservableCollection tb = new System.Collections.ObjectModel.ObservableCollection();
                 tb.Text = res + "\n";
 
                 tb.MouseLeftButtonUp += Tb_MouseLeftButtonUp;
@@ -309,7 +342,7 @@ namespace WpfExplorer
 
         }
 
-        
+
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {

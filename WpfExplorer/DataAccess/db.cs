@@ -26,7 +26,7 @@ namespace WpfExplorer
                     List<T> items = JsonConvert.DeserializeObject<List<T>>(json);
                     return items[0];
                 }
-                catch (Exception e) { main.ReportError(e); throw; }
+                catch (Exception e) { main.ReportError(e); throw new Exception(); }
             }
         }
 
@@ -61,6 +61,8 @@ namespace WpfExplorer
             }
         }
 
+        //Create a function to connect to a mysql database, execute a query and return the result
+
         public static List<string> myquery(string command)
         {
             DBConf item = getConf<DBConf>("config");
@@ -80,6 +82,7 @@ namespace WpfExplorer
         }
 
 
+        [Obsolete("switching to MySQL, please use myquery(command);")]
         public static List<string> query(string command)
         {
 #pragma warning disable 0649

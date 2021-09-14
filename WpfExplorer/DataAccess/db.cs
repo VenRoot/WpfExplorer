@@ -30,6 +30,7 @@ namespace WpfExplorer
             }
         }
 
+        //Speichert eine Datei in Appdata\Roaming\WpfExplorer\. Nimmt den Dateinamen und den Text (in JSON) als Übergabewert
         public static void setConf(string name, object text)
         {
             string dir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
@@ -43,6 +44,7 @@ namespace WpfExplorer
             catch (Exception e) { main.ReportError(e); throw; }
         }
 
+        //Pingt die Datenbank an und gibt den Ping in ms zurück. Falls fehlgeschlagen, gebe -1 zurück
         public static double PingDB()
         {
             DBConf conf = getConf<DBConf>("config");
@@ -58,11 +60,12 @@ namespace WpfExplorer
                 MessageBox.Show("Bei der Verbindung ist ein Fehler aufgetreten, prüfen Sie Ihre Verbindung\n\n" + e);
                 Environment.Exit(1);
                 throw;
+                
             }
         }
 
-        //Create a function to connect to a mysql database, execute a query and return the result
 
+        //baut eine Verbindung zur MariaDB auf und führt eine Query aus, gibt dann das Ergebnis zurück
         public static List<string> myquery(string command)
         {
             DBConf item = getConf<DBConf>("config");

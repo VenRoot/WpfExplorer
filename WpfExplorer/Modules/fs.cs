@@ -103,16 +103,13 @@ namespace WpfExplorer
 
         }
         /** Sucht nach einer Datei nach ihrem Namen und gibt die Datei mit dem Pfad zurück */
-        public static List<main.FileStructure> searchFile(string Filename, bool SearchFileContent)
+        public static List<Model.FileStructure> searchFile(string Filename, bool SearchFileContent)
         {
             /** Es wird noch indiziert. Kann nicht gesucht werden*/
             int ___ = 0;
             while (main.isIndexerRunning) { System.Diagnostics.Debug.WriteLine("Still running" + ___); ___++; }
             C_IZ conf = db.getConf<C_IZ>("database");
-            List<main.FileStructure> FoundFiles = new List<main.FileStructure>();
-
-            Regex.IsMatch(Filename, WildCardToRegular(Filename));
-
+            List<Model.FileStructure> FoundFiles = new List<Model.FileStructure>();
             for (int i = 0; i < conf.Paths.Count; i++)
             {
                 List<C_File> _ = new List<C_File>();
@@ -120,7 +117,7 @@ namespace WpfExplorer
                 else _ = conf.Paths[i].Files.Where(p => p.Name.Contains(Filename)).ToList();
                 for(int j = 0; j < _.Count(); j++)
                 {
-                    FoundFiles.Add(new main.FileStructure() { Filename = _[j].Name, Path = _[j].FullPath, Size = _[j].Size });
+                    if (conf.Paths[i].Files[o].Contains(Filename)) FoundFiles.Add(new Model.FileStructure() { Filename = conf.Paths[i].Files[o], Path = conf.Paths[i].Path });
                 }
             }
             return FoundFiles;
@@ -232,44 +229,6 @@ namespace WpfExplorer
                 main.ReportError(e);
             }
         }
-
-        public static string ExtractText(C_File file)
-        {
-            FileAttributes attr = File.GetAttributes(file.FullPath);
-
-            if (attr.HasFlag(FileAttributes.Directory)) return "";
-
-            TextExtractorD extractor = new TextExtractorD();
-            FileInfo sd = new FileInfo(file.FullPath);
-            return extractor.Extract(sd.FullName);
-        }
-
-        public static C_File getFileInfo(string _f)
-        {
-            C_File file = new C_File();
-            file.Name = Path.GetFileName(_f);
-            file.FullPath = Path.GetFullPath(_f);
-            file.Content = null;
-            file.Size = Convert.ToUInt64(new FileInfo(file.FullPath).Length);
-            if (fs.validFileTypes.Contains(Path.GetExtension(file.Name).ToLower()))  file.Content = ExtractText(file);
-            return file;
-        }
-
-        interface index
-        {
-            string path { get; set; }
-        }
-
-        public class i
-        {
-            public i(string path)
-            {
-                this.path = path;
-            }
-            public string path;
-        }
-
-
 
 
         /** Welche Pfade sollen indiziert werden*/

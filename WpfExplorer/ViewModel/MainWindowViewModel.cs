@@ -14,11 +14,7 @@ using RelayCommand = CommandHelper.RelayCommand;
 using System.Threading;
 using Newtonsoft.Json;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Threading;
-using iTextSharp;
-using iTextSharp.text;
-using System.Text.RegularExpressions;
+using WpfExplorer.Model;
 
 namespace WpfExplorer.ViewModel
 {
@@ -33,8 +29,16 @@ namespace WpfExplorer.ViewModel
         {
             fs.checkConfig();
 
-            //fs.ExtractText("C:\\Temp\\owo");
-            
+            //Hole die ID von der Datei
+            var FILE = db.getConf<fs.C_IZ>("database");
+            if(FILE.AUTH_KEY == null)
+            {
+                FILE.AUTH_KEY = main.RandomString(64);
+                fs.writeFileSync(MainWindowViewModel.CONFIG_LOCATIONS+"\\database.json", JsonConvert.SerializeObject(FILE), true);
+            }
+
+            AUTH_KEY = FILE.AUTH_KEY;
+            //Task.Run(db.sync);
             tb_Ping_Text = "Connecting to Database...";
             ButtonCommand = new RelayCommand(o => Debug_Click());
             Index_Click = new RelayCommand(o => Indiziere());
@@ -162,7 +166,7 @@ namespace WpfExplorer.ViewModel
             //{
 
             //    System.Windows.Controls.TextBox txt = new System.Windows.Controls.TextBox();
-            //    List<main.FileStructure> oof = fs.searchFile(tb_Search.Text, false);
+            //    List<Model.FileStructure> oof = fs.searchFile(tb_Search.Text, false);
             //    oof.ForEach((p) =>
             //    {
             //        AddToGrid(p.Filename, p.Path);
@@ -262,9 +266,9 @@ namespace WpfExplorer.ViewModel
 
         public object SelectedFileException { get => selectedFileException; set => SetProperty(ref selectedFileException, value); }
 
-        public main.FileStructure selectedFile;
+        public Model.FileStructure selectedFile;
 
-        public main.FileStructure SelectedFile
+        public Model.FileStructure SelectedFile
         {
             get { return selectedFile; }
             set
@@ -352,7 +356,7 @@ namespace WpfExplorer.ViewModel
             //MessageBox.Show(files.Length + "\n" + string.Join(",", files));
 
             int TotalFiles = files.Length;
-            C_TFiles ProcessedFiles = new C_TFiles();
+            ScannedFilesList ProcessedFiles = new ScannedFilesList();
             for (int i = 0; i < TotalFiles; i++)
             {
                 //fs.AddToIndex(files[i]);
@@ -360,9 +364,9 @@ namespace WpfExplorer.ViewModel
                 switch (fs.AddToIndex(files[i]))
                 {
 
-                    case -1: SetIndexMessage($"Die Datei {Path.GetFileName(files[i])} konnte nicht indiziert werden, da sie schon vorhanden ist"); ProcessedFiles.FilesSkipped.Add(new C_Files { FileName = Path.GetFileName(files[i]), Path = files[i] }); break; //Datei schon vorhanden
-                    case -255: ProcessedFiles.FilesErr.Add(new C_Files { FileName = Path.GetFileName(files[i]), Path = files[i] }); break; //Exception
-                    case 0: ProcessedFiles.FilesOk.Add(new C_Files {FileName = Path.GetFileName(files[i]), Path = files[i] });  break;
+                    case -1: MessageBox.Show($"Die Datei {Path.GetFileName(files[i])} konnte nicht indiziert werden, da sie schon vorhanden ist"); ProcessedFiles.FilesErr.Add(new ScannedFile { FileName = Path.GetFileName(files[i]), Path = files[i] }); break; //Datei schon vorhanden
+                    case -255: break; //Exception
+                    case 0: break;
 
                 }
                 SetIndexProgress(_files[i], i, TotalFiles);
@@ -410,19 +414,6 @@ namespace WpfExplorer.ViewModel
             }
 
             return filesList.ToArray();
-        }
-
-        public class C_TFiles
-        {
-            public List<C_Files> FilesOk = new List<C_Files>() { };
-            public List<C_Files> FilesErr = new List<C_Files>() { };
-            public List<C_Files> FilesSkipped = new List<C_Files>() { };
-        }
-
-        public class C_Files
-        {
-            public string FileName;
-            public string Path;
         }
 
         ICommand _addToExceptList;

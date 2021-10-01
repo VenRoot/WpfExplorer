@@ -42,14 +42,9 @@ namespace WpfExplorer
               .Select(s => s[random.Next(s.Length)]).ToArray());
         }
 
-        public static FileStructure[] FoundFiles;
+        public static Model.FileStructure[] FoundFiles;
 
-        public class FileStructure
-        {
-            public string Path;
-            public string Filename;
-            public ulong Size;
-        }
+
 
         public static string getPathDialog(string path = null)
         {

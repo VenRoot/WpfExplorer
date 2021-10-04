@@ -60,10 +60,9 @@
             </i:Interaction.Triggers>
         </ListBox>
         <TextBlock Text="{Binding IndexProgress}" Margin="10,131.163,10,10" Grid.ColumnSpan="2" Grid.Row="1"></TextBlock>
-        <StackPanel Height="25" Orientation="Horizontal" Grid.Row="1" Background="#142880" Grid.ColumnSpan="2" Margin="395,128,1,10">
-            <Image Name="play_icon" Width="20" Height="20" Margin="5 0 0 0" Source="../../img/play_new.png"></Image>
-            <TextBlock Text="Requesting DB..." Foreground="White" Margin="5 5 0 0"></TextBlock>
-            
+        <StackPanel Height="25" Orientation="Horizontal" Background="#142880" Grid.Column="1" Grid.Row="1" Margin="0 120 0 0">
+            <Image Name="play_btn" Width="20" Height="20" Margin="5 0 0 0" Source="../../img/play_new.png"></Image>
+            <TextBlock Text="Requesting DB..." Foreground="White" Margin="5 4 0 0"></TextBlock>
         </StackPanel>
 
 

@@ -164,6 +164,13 @@ namespace WpfExplorer
             }
         }
 
+        public static List<string> validFileTypes = new List<string> {
+            ".txt",
+            ".pdf",
+            ".doc",
+            ".docx"
+        };
+
         public static string WildCardToRegular(string value)
         {
             return "^" + Regex.Escape(value).Replace("\\*", ".*") + "$";
@@ -219,12 +226,12 @@ namespace WpfExplorer
 
         public static string ExtractText(C_File file)
         {
-            FileAttributes attr = File.GetAttributes(file.Name);
+            FileAttributes attr = File.GetAttributes(file.FullPath);
 
             if (attr.HasFlag(FileAttributes.Directory)) return "";
 
             TextExtractorD extractor = new TextExtractorD();
-            FileInfo sd = new FileInfo(file.Name);
+            FileInfo sd = new FileInfo(file.FullPath);
             return extractor.Extract(sd.FullName);
         }
 
@@ -235,6 +242,7 @@ namespace WpfExplorer
             file.FullPath = Path.GetFullPath(_f);
             file.Content = null;
             file.Size = Convert.ToUInt64(new FileInfo(file.FullPath).Length);
+            if (fs.validFileTypes.Contains(Path.GetExtension(file.Name).ToLower()))  file.Content = ExtractText(file);
             return file;
         }
 

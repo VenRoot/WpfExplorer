@@ -110,6 +110,9 @@ namespace WpfExplorer
             while (main.isIndexerRunning) { System.Diagnostics.Debug.WriteLine("Still running" + ___); ___++; }
             C_IZ conf = db.getConf<C_IZ>("database");
             List<Model.FileStructure> FoundFiles = new List<Model.FileStructure>();
+
+            Regex.IsMatch(Filename, WildCardToRegular(Filename));
+
             for (int i = 0; i < conf.Paths.Count; i++)
             {
                 List<C_File> _ = new List<C_File>();
@@ -117,7 +120,7 @@ namespace WpfExplorer
                 else _ = conf.Paths[i].Files.Where(p => p.Name.Contains(Filename)).ToList();
                 for(int j = 0; j < _.Count(); j++)
                 {
-                    if (conf.Paths[i].Files[o].Contains(Filename)) FoundFiles.Add(new Model.FileStructure() { Filename = conf.Paths[i].Files[o], Path = conf.Paths[i].Path });
+                    FoundFiles.Add(new Model.FileStructure() { Filename = _[j].Name, Path = _[j].FullPath, Size = _[j].Size });
                 }
             }
             return FoundFiles;

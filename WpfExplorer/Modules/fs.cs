@@ -144,6 +144,8 @@ namespace WpfExplorer
                     if (data.Paths[i].Path == path)
                     {
                         //JA, füge Eintrag zu Paths[i].Files hinzu, wenn diese nicht schon vorhanden ist
+                        if (data.Paths[i].Files.Where(p => p.FullPath == file.FullPath).Count() == 0) data.Paths[i].Files.Add(file);
+                        else return -1;
                         if (!data.Paths[i].Files.Contains(file)) { data.Paths[i].Files.Add(file); } else { return -1; }
                         found = true;
                         break;
@@ -273,7 +275,7 @@ namespace WpfExplorer
         //}
 
 
-        public partial class C_IZ
+        public class C_IZ
         {
             [JsonProperty("Paths")]
             public List<C_Path> Paths { get; set; }
@@ -285,7 +287,7 @@ namespace WpfExplorer
             public string last_sync {get; set;}
         }
 
-        public partial class C_Path
+        public class C_Path
         {
             [JsonProperty("Path")]
             public string Path { get; set; }
@@ -294,7 +296,7 @@ namespace WpfExplorer
             public List<C_File> Files { get; set; }
         }
 
-        public partial class C_File
+        public class C_File
         {
             public string Name { get; set; }
 

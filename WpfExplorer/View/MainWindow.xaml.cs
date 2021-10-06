@@ -46,6 +46,12 @@ namespace WpfExplorer
             //MessageBox.Show("MySQL " + query[0]);
 
             //allDrives = DriveInfo.GetDrives();
+            this.Loaded += InitVM;
+        }
+
+        private void InitVM(object sender, EventArgs e)
+        {
+            ((MainWindowViewModel)DataContext).ready_Tick();
         }
 
         private void SetPing(object sender, EventArgs e)
@@ -133,24 +139,12 @@ namespace WpfExplorer
             return filesList.ToArray();
         }
 
-        class C_TFiles
-        {
-            public List<C_Files> FilesOk;
-            public List<C_Files> FilesErr;
-        }
-
-        public class C_Files
-        {
-            public string FileName;
-            public string Path;
-        }
-
         //private void OnProgressChanged(object sender, ProgressChangedEventArgs e)
         //{
         //    SetIndexProgress()
         //}
 
-        public static void AddToGrid(string FileName, string FullPath)
+        public static void AddToGrid(fs.C_File FileName, string FullPath)
         {
           
         }
@@ -176,11 +170,9 @@ namespace WpfExplorer
         }
 
 
-        public List<string> GetExceptionList()
+        public static List<string> GetExceptionList(MainWindowViewModel model)
         {
-            
-            return new main().getMVVM().FileExceptionList.ToList();
-            //return ListBox.Items.Cast<string>().ToList();
+            return model.FileExceptionList.ToList();
         }
 
 
@@ -215,7 +207,7 @@ namespace WpfExplorer
         //    //{
 
         //    //    System.Windows.Controls.TextBox txt = new System.Windows.Controls.TextBox();
-        //    //    List<main.FileStructure> oof = fs.searchFile(tb_Search.Text, false);
+        //    //    List<Model.FileStructure> oof = fs.searchFile(tb_Search.Text, false);
         //    //    oof.ForEach((p) =>
         //    //    {
         //    //        AddToGrid(p.Filename, p.Path);
@@ -311,6 +303,11 @@ namespace WpfExplorer
             img_path = img_path.Replace(@"WpfExplorer\bin\Debug", @"img\play_new.png");
             play_btn.Source = new BitmapImage(new Uri(img_path));
             Detect_Click(sender, e);
+        }
+
+        private void lb_Exceptions_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+
         }
     }
 }

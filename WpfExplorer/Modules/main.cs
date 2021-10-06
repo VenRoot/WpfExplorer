@@ -41,13 +41,15 @@ namespace WpfExplorer
               .Select(s => s[random.Next(s.Length)]).ToArray());
         }
 
-        public static FileStructure[] FoundFiles;
+        public static Model.FileStructure[] FoundFiles;
 
-        public class FileStructure
-        {
-            public string Path;
-            public string Filename;
-        }
+
+        //public class FileStructure
+        //{
+        //    public string Path;
+        //    public string Filename;
+        //    public ulong Size;
+        //}
 
         public static string getPathDialog(string path = null)
         {
@@ -73,12 +75,12 @@ namespace WpfExplorer
         }
 
         //Gebe das Objekt der ViewModel zurück
-        public MainWindowViewModel getMVVM()
+        public MainWindow getMVVM()
         {
-            var d = new MainWindowViewModel();
+            var d = new MainWindow();
             this.Dispatcher.BeginInvoke((Action)delegate ()
             {
-                d = Application.Current.Windows.Cast<MainWindowViewModel>().FirstOrDefault();
+                d = Application.Current.Windows.Cast<MainWindow>().FirstOrDefault();
             });
             return d;
         }

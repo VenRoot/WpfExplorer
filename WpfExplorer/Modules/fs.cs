@@ -1,5 +1,4 @@
-﻿
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,7 +11,6 @@ using Visualis.Extractor;
 using iTextSharp.text;
 using System.Text.RegularExpressions;
 using WpfExplorer.ViewModel;
-
 
 namespace WpfExplorer
 {
@@ -39,7 +37,7 @@ namespace WpfExplorer
             if (path == null) return null;
             if (!recursive)
             {
-                
+
                 if (fullpath) return Directory.GetFiles(path).Select(p => Path.GetFullPath(p)).ToArray();
                 return Directory.GetFiles(path).Select(p => Path.GetFileName(p)).ToArray();
             }
@@ -64,7 +62,7 @@ namespace WpfExplorer
 
         public static string readFileSync(string path)
         {
-            using (StreamReader r = new StreamReader(path, Encoding.UTF8)) try { return r.ReadToEnd(); } catch(Exception e) {  MessageBox.Show("Datenbank konnte nicht gefunden werden"); return null; }
+            using (StreamReader r = new StreamReader(path, Encoding.UTF8)) try { return r.ReadToEnd(); } catch (Exception e) { MessageBox.Show("Datenbank konnte nicht gefunden werden"); return null; }
         }
 
         public static void writeFileSync(string path, string context, bool overwrite = false)
@@ -119,7 +117,7 @@ namespace WpfExplorer
                 List<C_File> _ = new List<C_File>();
                 if (Filename.Contains("*")) _ = conf.Paths[i].Files.Where(p => Regex.IsMatch(p.Name, WildCardToRegular(Filename))).ToList<C_File>();
                 else _ = conf.Paths[i].Files.Where(p => p.Name.Contains(Filename)).ToList();
-                for(int j = 0; j < _.Count(); j++)
+                for (int j = 0; j < _.Count(); j++)
                 {
                     FoundFiles.Add(new Model.FileStructure() { Filename = _[j].Name, Path = _[j].FullPath, Size = _[j].Size });
                 }
@@ -129,7 +127,6 @@ namespace WpfExplorer
         /** Holt sich die IndexDatei und fügt einen Eintrag hinzu */
         public static int AddToIndex(string _file)
         {
-
             try
             {
                 main.isIndexerRunning = true;
@@ -234,6 +231,44 @@ namespace WpfExplorer
             }
         }
 
+        public static string ExtractText(C_File file)
+        {
+            FileAttributes attr = File.GetAttributes(file.FullPath);
+
+            if (attr.HasFlag(FileAttributes.Directory)) return "";
+
+            TextExtractorD extractor = new TextExtractorD();
+            FileInfo sd = new FileInfo(file.FullPath);
+            return extractor.Extract(sd.FullName);
+        }
+
+        public static C_File getFileInfo(string _f)
+        {
+            C_File file = new C_File();
+            file.Name = Path.GetFileName(_f);
+            file.FullPath = Path.GetFullPath(_f);
+            file.Content = null;
+            file.Size = Convert.ToUInt64(new FileInfo(file.FullPath).Length);
+            if (fs.validFileTypes.Contains(Path.GetExtension(file.Name).ToLower())) file.Content = ExtractText(file);
+            return file;
+        }
+
+        interface index
+        {
+            string path { get; set; }
+        }
+
+        public class i
+        {
+            public i(string path)
+            {
+                this.path = path;
+            }
+            public string path;
+        }
+
+
+
 
         /** Welche Pfade sollen indiziert werden*/
         //public class CF_Ind
@@ -251,10 +286,10 @@ namespace WpfExplorer
             public List<C_Path> Paths { get; set; }
 
             [JsonProperty("AUTH_KEY")]
-            public string AUTH_KEY {get; set;}
+            public string AUTH_KEY { get; set; }
 
             [JsonProperty("last_sync")]
-            public string last_sync {get; set;}
+            public string last_sync { get; set; }
         }
 
         public class C_Path
@@ -275,8 +310,8 @@ namespace WpfExplorer
             //<summary>
             //Die Länge der Datei in Bytes
             //</summary>
-            public ulong Size {  get; set; }
-            public string Date {  get; set; }
+            public ulong Size { get; set; }
+            public string Date { get; set; }
             public string Content { get; set; }
 
             //public C_File(string fullpath)

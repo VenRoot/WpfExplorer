@@ -8,11 +8,8 @@
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:ignore="http://www.galasoft.ch/ignore"
         mc:Ignorable="ignore"
-        xmlns:ViewModel="clr-namespace:WpfExplorer.ViewModel"
-        ignore:DataContext="{StaticResource MainViewModel}"
-        xmlns:local="clr-namespace:WpfExplorer" xmlns:cmd="http://www.galasoft.ch/mvvmlight" xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity" 
-        Title="MainWindow" Height="450" Width="800" Loaded="Window_Loaded">
 
+        Title="MainWindow" Height="450" Width="800" Loaded="Window_Loaded">
     <Window.DataContext>
         <ViewModel:MainWindowViewModel x:Name="mvm"></ViewModel:MainWindowViewModel>
     </Window.DataContext>

@@ -8,11 +8,10 @@
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:ignore="http://www.galasoft.ch/ignore"
         mc:Ignorable="ignore"
-
         Title="MainWindow" Height="450" Width="800" Loaded="Window_Loaded">
     <Window.DataContext>
         <ViewModel:MainWindowViewModel x:Name="mvm"></ViewModel:MainWindowViewModel>
-    </Window.DataContext>
+    </Window.DataContext>   
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="2*"/>
@@ -72,9 +71,16 @@
                 </i:EventTrigger>
             </i:Interaction.Triggers>
         </ListBox>
+        <TextBlock Text="{Binding IndexProgress}" Margin="10,131.163,10,10" Grid.ColumnSpan="2" Grid.Row="1"></TextBlock>
+        <StackPanel Height="25" Orientation="Horizontal" Background="#142880" Grid.Column="1" Grid.Row="1" Margin="0 120 0 0">
+            <Image Name="play_btn" Width="20" Height="20" Margin="5 0 0 0" Source="../../img/play_new.png"></Image>
+            <TextBlock Text="Requesting DB..." Foreground="White" Margin="5 4 0 0"></TextBlock>
+        </StackPanel>
+
         <!--<TextBlock Text="{Binding IndexProgress}" Margin="10,131.163,10,10" Grid.ColumnSpan="2" Grid.Row="1"></TextBlock> -->
         <Grid VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="400" Height="13" Margin="10,0,0,4" Grid.Row="1">
             <TextBlock Text="{Binding FileProgress}"></TextBlock>
         </Grid>
+
     </Grid>
 </Window>

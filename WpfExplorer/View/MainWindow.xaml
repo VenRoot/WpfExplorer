@@ -8,12 +8,27 @@
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:ignore="http://www.galasoft.ch/ignore"
         mc:Ignorable="ignore"
+
         Title="MainWindow" Height="450" Width="800" Loaded="Window_Loaded">
     <Window.DataContext>
         <ViewModel:MainWindowViewModel x:Name="mvm"></ViewModel:MainWindowViewModel>
     </Window.DataContext>
 
     <DockPanel Background="#252525" LastChildFill="True" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2*"/>
+            <ColumnDefinition Width="2*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="264.837"/>
+            <RowDefinition Height="163.163"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Column="0" Grid.Row="0" Name="TB_Ping" Text="{Binding tb_Ping_Text}" Margin="10,10,129,212.837"></TextBlock>
+        <!--<TextBlock Grid.Column="0" Grid.Row="0" Name="TB_PingTime" Margin="150,10,6,212.837"></TextBlock>-->
+        <TextBlock FontWeight="Bold" Grid.Column="1" Grid.Row="0" Name="TB_SearchText" Margin="0,8,1,232.837">Suchen Sie nach einem Dateinamen oder nach dem Inhalt einer Datei</TextBlock>
+        <TextBox HorizontalAlignment="Stretch" Grid.Column="1" Grid.Row="0" Text="{Binding Path=tb_Search_Text, UpdateSourceTrigger=PropertyChanged}"  Name="tb_Search" Height="25" Margin="0,30,6,208.837"></TextBox>
 
         <Grid Background="#142880" DockPanel.Dock="Bottom" Width="Auto" Height="35">
             <Grid.ColumnDefinitions>

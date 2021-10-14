@@ -23,13 +23,6 @@ namespace WpfExplorer.ViewModel
 {
     public class MainWindowViewModel : INotifyPropertyChanged
     {
-        public static string AUTH_KEY = "";
-        public static string TEMP_LOCATION = Path.Combine(Path.GetTempPath(), "WpfExplorer");
-        public static fs.C_UC us = new fs.C_UC();
-        public static string DBEXTENSION = ".wpfex";
-        public static string DB_ENC_EXTENSION = ".enc.wpfex";
-        public static string CONFIG_LOCATIONS = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "WpfExplorer\\");
-        public static DriveInfo[] allDrives;
         public event PropertyChangedEventHandler PropertyChanged;
 
         public MainWindowViewModel()
@@ -42,12 +35,12 @@ namespace WpfExplorer.ViewModel
             main.AddLog("initialized", main.status.log);
             
             tb_Ping_Text = "Connecting to Database...";
-            ButtonCommand = new RelayCommand(o => Debug_Click());
-            Index_Click = new RelayCommand(o => Indiziere());
-            tb_Search_Command = new RelayCommand(o => tb_Search_TextChanged());
-            MouseDoubleClick = new RelayCommand(o => OpenFileInExplorer(o));
+            ButtonCommand = new RelayCommand(o => MainModel.instance.Debug_Click());
+            Index_Click = new RelayCommand(o => MainModel.instance.Indiziere());
+            tb_Search_Command = new RelayCommand(o => MainModel.instance.tb_Search_TextChanged());
+            MouseDoubleClick = new RelayCommand(o => MainModel.instance.OpenFileInExplorer(o));
             //MyCommand = new RelayCommand(o => My(o));
-            MainWindowViewModel.instance = this;
+            instance = this;
             if (main.PingDB()) tb_Ping_Text = "Connected";
             else
             {
@@ -55,67 +48,20 @@ namespace WpfExplorer.ViewModel
                 main.ReportError(new Exception(), main.status.error, "Die Datenbank ist nicht erreichbar.Stellen Sie sicher, dass Sie den Port 3306 von ryukyun.de erreichen können");
                 return;
             }
-            DispatcherTimer dT = new DispatcherTimer();
 
-            //DispatcherTimer ready = new DispatcherTimer(TimeSpan.Zero, DispatcherPriority.ApplicationIdle, ready_Tick, Application.Current.Dispatcher);
-            dT.Tick += new EventHandler(SetPing);
-            dT.Interval = new TimeSpan(0, 0, 0);
-            dT.Start();
-
-
-            //List<string> query = db.myquery("SELECT version();");
-            //MessageBox.Show(query[0]);
-
-            allDrives = DriveInfo.GetDrives();
+            MainModel.allDrives = DriveInfo.GetDrives();
         }
 
         public static MainWindowViewModel instance;
 
-        public void OpenDialog()
-        {
-            DialogWindow window = new DialogWindow();
-            window.Show();
-        }
-        public void ready_Tick()
-        {
-            var res = db.fetch();
-            if(res == 1)
-            {
-                PPbtn = "↓";
-            }
-            else if(res == 0)
-            {
-                PPbtn = "↑";
-            }
-            else if(res == -2)
-            {
-                PPbtn = "✓";
-            }
-        }
+        
+        
 
         public void sync()
         {
             
             db.pull();
             db.push();
-        }
-        
-
-        public static void CheckExtKey()
-        {
-            const string userRoot = "HKEY_CURRENT_USER";
-            const string subkey = "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.wpfex\\OpenWithList";
-            const string subkey_enc = "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.enc.wpfex\\OpenWithList";
-            const string keyName = userRoot + "\\" + subkey;
-            Registry.SetValue(keyName, "a", "WpfExplorer.exe", RegistryValueKind.String);
-            Registry.SetValue(keyName, "b", "a", RegistryValueKind.String);
-            Registry.SetValue(keyName, "MRUList", "ab", RegistryValueKind.String);
-        }
-
-        private void SetPing(object sender, EventArgs e)
-        {
-            double PingTime = db.PingDB();
-            tb_Ping_Text = $"{PingTime}ms";
         }
 
         public ICommand KeyInputCommand
@@ -173,53 +119,16 @@ namespace WpfExplorer.ViewModel
             {
                 if (enterKeyCommand == null)
                 {
-                    enterKeyCommand = new RelayCommand(EnterKey);
+                    enterKeyCommand = new RelayCommand(MainModel.instance.EnterKey);
                 }
 
                 return enterKeyCommand;
             }
         }
 
-        private void EnterKey(object commandParameter)
-        {
-            MessageBox.Show(commandParameter.ToString());
+        
 
-            FileExceptionList.Add(commandParameter.ToString());
-            tb_AddExceptionsText = "";
-        }
-
-        public void tb_Search_TextChanged()
-        {
-            FoundFiles.Clear();
-
-            /** Nichts eingegeben = nichts anzeigen */
-            if (tb_Search_Text.Length == 0) return;
-            /**Es sollten zuerst die Dateinamen und DANN erst Dateien mit dem Inhalt durchsucht werden */
-
-            List<FileStructure> File = fs.searchFile(tb_Search_Text, true);
-            Task.Run(searchContext);
-            if (File.Count != 0)
-            {
-
-                foreach (var v in File)
-                {
-                    double size = 0;
-                    string end = "b";
-                    if (v.Size > 1000) { end = "kB"; size = Convert.ToDouble(v.Size / 1000); }
-                    else if (v.Size > 1000000) { end = "MB"; size = v.Size / 1000000; }
-                    else if (v.Size > 1000000000) { end = "GB"; size = v.Size / 1000000000; }
-
-                    v.Path = Path.GetDirectoryName(v.Path);
-
-                    string res = "";
-                    res += v.Filename + "\n";
-                    res += v.Path + "\n";
-                    res += size + end + "\n\n";
-
-                    FoundFiles.Add(res);
-                }
-            }
-        }
+        
 
         public void searchContext()
         {
@@ -235,51 +144,9 @@ namespace WpfExplorer.ViewModel
             return true;
         }
 
-        private string[] checkForExcpetionlist(string[] files)
-        {
-            /*
-             * Wenn el[i][0] == *, el.Includes(el[i][el[i]-1]
-             * 
-             * prüfe ob Path.GetExtension(files[i]) != '' && ob in el, dann entferne
-             */
+        
 
-            List<string> el = ExcList;
-            List<string> filesList = files.ToList();
-
-            //Entferne alle Dateitypen in der Liste
-            for (int i = 0; i < filesList.Count; i++)
-            {
-                string ext = Path.GetExtension(filesList[i]);
-                if (ext.Length > 0 && el.Contains(ext)) filesList.RemoveAt(i);
-            }
-
-            string[] _el = el.ToArray();
-            //Enterne alle Verzeichnisse 
-            for (int i = 0; i < _el.Length; i++)
-            {
-                for (int o = 0; o < filesList.Count; o++)
-                {
-                    //Prüfe, ob der Eintrag ein "Verzeichnis/" ist und prüfe anschließend, ob die Datei in solch einem Verzeichnis ist
-                    if (_el[i].EndsWith("/") && filesList[o].Replace("\\", "/").Contains(_el[i])) filesList.RemoveAt(o);
-                }
-            }
-
-            return filesList.ToArray();
-        }
-
-        public static List<string> GetExceptionList(MainWindowViewModel model)
-        {
-            return model.FileExceptionList.ToList();
-        }
-
-        public void showFileExceptions()
-        {
-            List<string> ex = new List<string>();
-
-            for (int i = 0; i < FileExceptionList.Count; i++) ex.Add(FileExceptionList[i]);
-
-            MessageBox.Show(ex.ToString());
-        }
+        
 
         public ICommand ButtonCommand { get; set; }
         public ICommand tb_Search_Command { get; set; }
@@ -289,16 +156,7 @@ namespace WpfExplorer.ViewModel
 
         //public ICommand MyCommand { get; set; }
 
-        public void MyCommand(object sender, SelectionChangedEventArgs e)
-        {
-            List<string> lul = (List<string>)e.AddedItems;
-            MessageBox.Show(string.Join("\n", lul));
-        }
-
-        public void Debug_Click()
-        {
-            MessageBox.Show(string.Join("\n", FileExceptionList));
-        }
+        
 
         public string tb_AddExceptionsText { get; set; } = null;
 
@@ -314,7 +172,7 @@ namespace WpfExplorer.ViewModel
                     if (this.PropertyChanged != null)
                     {
                         this.PropertyChanged(this, new PropertyChangedEventArgs("tb_Search_Text"));
-                        tb_Search_TextChanged();
+                        MainModel.instance.tb_Search_TextChanged();
                     }
                 }
 
@@ -359,27 +217,7 @@ namespace WpfExplorer.ViewModel
             }
         }
 
-        public void FileSelectionChanged(object sender, SelectionChangedEventArgs args)
-        {
-            ListBoxItem lbi = ((sender as ListBox).SelectedItem as ListBoxItem);
-            MessageBox.Show(lbi.Content.ToString());
-            MessageBox.Show(selectedFile.Path);
-            Process.Start(lbi.Content.ToString());
-        }
-
-        private void OpenFileInExplorer(object o)
-        {
-            if (o == null) return;
-            string p = o.ToString();
-            string[] pp = p.Split('\n');
-            string path = Path.Combine(pp[1], pp[0]);
-
-            string argument = "/select, \"" + path + "\"";
-            Process.Start("explorer.exe", argument);
-            //cmd.StartInfo.Arguments = "/c " + $"explorer.exe /select,\"{pp[1]}\\{pp[0]}\"";
-            //cmd.EnableRaisingEvents = true;
-            //cmd.Start();
-        }
+        
 
         private RelayCommand _bt_Help1;
 
@@ -389,155 +227,18 @@ namespace WpfExplorer.ViewModel
             {
                 if (_bt_Help1 == null)
                 {
-                    _bt_Help1 = new RelayCommand(Perform_bt_Help);
+                    _bt_Help1 = new RelayCommand(MainModel.instance.Perform_bt_Help);
                 }
 
                 return _bt_Help1;
             }
         }
 
-        private void Perform_bt_Help(object commandParameter)
-        {
-            MessageBox.Show("Bedienung:\n*.jpg => Filter alle JPG Dateien\nHa* => Filter alle Dateien, welche mit Ha beginnen\n*2021* => Filter alle Dateien, welche 2021 im Namen haben\n\nFiles/ ignoriert jedes Verzeichnis mit dem Namen Files\n*les/ ignoriert jedes Verzeichnis mit les am Ende\nC:\\Users\\ ignoriert NUR diesen einen Ordner\n\nRechtsklicken Sie auf einen Eintrag, um diesen zu entfernen");
-        }
+        
 
 
-        string _PATH = "";
-        List<string> ExcList = new List<string>();
-
-        public void Indiziere()
-        {
-            _PATH = main.getPathDialog();
-            if (_PATH == "") return;
-
-            BackgroundWorker worker = new BackgroundWorker();
-            worker.WorkerReportsProgress = true;
-            worker.WorkerSupportsCancellation = true;
-            worker.ProgressChanged += backgroundWorker1_ProgressChanged;
-            worker.DoWork += backgroundWorker1_DoWork;
-            worker.RunWorkerAsync();
-            return;
-        }
-
-        public bool IsExceptedFile(string file)
-        {
-            //List<string> ExceptionList = getFileExceptionList();
-            var valid = false;
-            List<string> ExceptionList = new List<string>
-            {
-                @"C:\Temp\"
-            };
-            for (int i = 0; i < ExceptionList.Count; i++)
-            {
-                if (ExceptionList[i].EndsWith("/"))
-                {
-                    List<string> split = ExceptionList[i].Split('/').ToList();
-                    if (file.Contains(split[0] + "\\")) return true;
-                }
-                if (ExceptionList[i].EndsWith("\\"))
-                {
-                    if (Path.GetDirectoryName(file) + "\\" == ExceptionList[i]) return true;
-                }
-                if (Regex.IsMatch(file, fs.WildCardToRegular(ExceptionList[i]))) { return true; }
-            }
-
-            return valid;
-        }
-
-        private void backgroundWorker1_ProgressChanged(object sender, ProgressChangedEventArgs e)
-        {
-            BW_Files files = JsonConvert.DeserializeObject<BW_Files>(e.UserState.ToString());
-            if (files.Message != null) SetIndexMessage(files.Message);
-            if(files.Current != null) SetIndexProgress(files.Current.FileName, files.Current.FileCount, files.Total);
-
-        }
-
-        private class BW_Files
-        {
-            public class File
-            {
-                public string FileName;
-                public int FileCount;
-            };
-            public int Total;
-            public uint InDB;
-            public File Current;
-            public string Message;
-
-            public BW_Files()
-            {
-                this.InDB = db.CountFiles();
-                this.Current = new File();
-            }
-        }
-
-        private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
-        {
-            BackgroundWorker worker = sender as BackgroundWorker;
-            BW_Files _progress = new BW_Files();
-            
-            string[] files = fs.readDirSync(_PATH, true, true);
-            if (files == null) return;
-            List<fs.C_File> _files = new List<fs.C_File>();
-
-            for (int i = 0; i < files.Length; i++)
-            {
-                if (IsExceptedFile(files[i])) continue;
-                _files.Add(fs.getFileInfo(files[i]));
-                _progress.Message = "Dateien werden gesucht... " + i + " Dateien gefunden";
-                worker.ReportProgress(0, JsonConvert.SerializeObject(_progress));
-            }
-
-
-            //Check if the file type or files are in the ExceptionList
-            files = checkForExcpetionlist(files);
-
-            int TotalFiles = files.Length;
-            _progress.Total = TotalFiles;
-            C_TFiles ProcessedFiles = new C_TFiles();
-            for (int i = 0; i < TotalFiles; i++)
-            {
-                //fs.AddToIndex(files[i]);
-                //Thread.Sleep(100);
-                switch (fs.AddToIndex(files[i]))
-                {
-
-                    case -1: string msg = $"Die Datei {Path.GetFileName(files[i])} konnte nicht indiziert werden, da sie schon vorhanden ist"; SetIndexMessage(msg); main.AddLog(msg, main.status.warning); ProcessedFiles.FilesSkipped.Add(new C_Files { FileName = Path.GetFileName(files[i]), Path = files[i] }); break; //Datei schon vorhanden
-                    case -255: ProcessedFiles.FilesErr.Add(new C_Files { FileName = Path.GetFileName(files[i]), Path = files[i] }); break; //Exception
-                    case 0: ProcessedFiles.FilesOk.Add(new C_Files { FileName = Path.GetFileName(files[i]), Path = files[i] }); main.AddLog($"Die Datei {Path.GetFileName(files[i])} wurde zur Datenbank hinzugefügt", main.status.log); break;
-
-                }
-                _progress.Current.FileCount++;
-                _progress.Current.FileName = _files[i].Name;
-                worker.ReportProgress(0, JsonConvert.SerializeObject(_progress));
-                //SetIndexProgress(_files[i], i, TotalFiles);
-            }
-            var temp_file = db.getConf<fs.C_IZ>("database");
-            temp_file.last_sync = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-            db.setConf("database", temp_file);
-            string MsgText = "";
-            if (ProcessedFiles.FilesSkipped.Count != 0) MsgText += $"{ProcessedFiles.FilesSkipped.Count} Dateien übersprungen\n";
-            if (ProcessedFiles.FilesErr.Count != 0) MsgText += $"{ProcessedFiles.FilesErr.Count} Dateien fehlerhaft\n";
-            if (ProcessedFiles.FilesOk.Count != 0) MsgText += $"{ProcessedFiles.FilesOk.Count} Dateien erfolgreich hinzugefügt\n";
-
-            int total = ProcessedFiles.FilesOk.Count + ProcessedFiles.FilesSkipped.Count + ProcessedFiles.FilesOk.Count;
-            MsgText += $"\n{total} von {TotalFiles} Dateien verarbeitet";
-            main.AddLog(MsgText.Replace("\n", " | "), main.status.log);
-            MessageBox.Show(MsgText);
-        }
-
-        public class C_TFiles
-        {
-            public List<C_Files> FilesOk = new List<C_Files>() { };
-            public List<C_Files> FilesErr = new List<C_Files>() { };
-            public List<C_Files> FilesSkipped = new List<C_Files>() { };
-        }
-
-        public class C_Files
-        {
-            public string FileName;
-            public string Path;
-        }
+        public string _PATH = "";
+        public List<string> ExcList = new List<string>();
 
         ICommand _addToExceptList;
 
@@ -545,33 +246,9 @@ namespace WpfExplorer.ViewModel
         {
             get
             {
-                if (_addToExceptList == null) _addToExceptList = new RelayCommand(e => ToExceptionList());
+                if (_addToExceptList == null) _addToExceptList = new RelayCommand(e => MainModel.instance.ToExceptionList());
                 return _addToExceptList;
             }
-        }
-
-
-        private void ToExceptionList()
-        {
-            return;
-        }
-
-
-        public void SetIndexProgress(string FileName, int current, int total)
-        {
-            double p = 100 / Convert.ToDouble(total);
-            double prozent = p * Convert.ToDouble(current);
-            if (Double.IsInfinity(prozent)) prozent = 0; 
-
-            tb_IndizierteFiles = $"{current} von {total} ({Math.Round(prozent, 2)}%) | {FileName}";
-            tb_DatenbankFiles = $"{current} Dateien in der Datenbank";
-
-        }
-
-        public void SetIndexMessage(string message)
-        {
-            tb_FoundFiles = message;
-            //FileProgress = message;
         }
 
         private RelayCommand settings_Click;
@@ -582,7 +259,7 @@ namespace WpfExplorer.ViewModel
             {
                 if (settings_Click == null)
                 {
-                    settings_Click = new RelayCommand(PerformSettings_Click);
+                    settings_Click = new RelayCommand(MainModel.instance.PerformSettings_Click);
                 }
 
                 return settings_Click;
@@ -595,7 +272,7 @@ namespace WpfExplorer.ViewModel
             {
                 if (settings_Click == null)
                 {
-                    settings_Click = new RelayCommand(PerformLogs_Click);
+                    settings_Click = new RelayCommand(MainModel.instance.PerformLogs_Click);
                 }
 
                 return settings_Click;
@@ -603,25 +280,7 @@ namespace WpfExplorer.ViewModel
         }
 
 
-        //In der Window sollte es Tickboxen geben, welche beim Anklick Variablen ändern.
-        //Z.B. ob rekursiv gesucht werden sollte. Unten im Eck sollte es einen "Schließen" Button geben
-        private void PerformSettings_Click(object commandParameter)
-        {
-            //Einstellungen wie rekursiv indizieren, Cache leeren
-            UserSettingsWindow window = new UserSettingsWindow();
-            window.Title = "Einstellungen - WpfExplorer";
-            window.ShowDialog();
-
-        }
-
-        private void PerformLogs_Click(object commandParameter)
-        {
-            //Einstellungen wie rekursiv indizieren, Cache leeren
-            LogViewer window = new LogViewer();
-            window.Title = "LogViewer - WpfExplorer";
-            window.ShowDialog();
-
-        }
+        
 
         private string fileProgress;
 
@@ -728,7 +387,7 @@ namespace WpfExplorer.ViewModel
         {
             MainWindow.instance.AnimationBoard.Begin();
             //MainWindow.instance.AnimationBoard.BeginAnimation()
-            ready_Tick();
+            MainModel.instance.ready_Tick();
             //MainWindow.instance.AnimationBoard.Stop();
         }
 
@@ -764,7 +423,7 @@ namespace WpfExplorer.ViewModel
         {
             db.pull();
             db.push();
-            ready_Tick();
+            MainModel.instance.ready_Tick();
         }
     }
 }

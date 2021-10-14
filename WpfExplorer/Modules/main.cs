@@ -6,6 +6,7 @@ using System.Linq;
 using System.Windows;
 using WpfExplorer.ViewModel;
 using WPFFolderBrowser;
+using WpfExplorer.Model;
 
 namespace WpfExplorer
 {
@@ -16,7 +17,7 @@ namespace WpfExplorer
         {
             string msg;
             if (e.GetType().ToString() == "Npgsql.NpgsqlException") msg = "Es wurde ein Fehler festgestellt. Stellen Sie sicher, dass sie mit dem Internet verbunden sind. Bei weiteren Fragen wenden Sie sich an ihren System Administrator\n\n\nFehlertext: " + e.Message;
-            else msg = $"Es ist ein kritischer Fehler aufgetreten, das Programm muss beendet werden: \n\n{e.Message}Die Log Datei finden Sie unter {Path.Combine(MainWindowViewModel.TEMP_LOCATION)} oder Sie nutzen den internen Log-Viewer\nWeitere Hilfe erhalten Sie hier: " + e.HelpLink;
+            else msg = $"Es ist ein kritischer Fehler aufgetreten, das Programm muss beendet werden: \n\n{e.Message}Die Log Datei finden Sie unter {Path.Combine(MainModel.TEMP_LOCATION)} oder Sie nutzen den internen Log-Viewer\nWeitere Hilfe erhalten Sie hier: " + e.HelpLink;
 
             if (status == main.status.warning)
             {
@@ -84,11 +85,11 @@ namespace WpfExplorer
             dia.Title = "Verzeichnis zum Indizieren wählen";
             if (encrypted)
             {
-                dia.DefaultExt = MainWindowViewModel.DBEXTENSION;
+                dia.DefaultExt = MainModel.DBEXTENSION;
                 UseDefaultExtAsFilterIndex(dia);
-                dia.Filter = $"Verschlüsselte DB Datei| *{MainWindowViewModel.DB_ENC_EXTENSION}";
+                dia.Filter = $"Verschlüsselte DB Datei| *{MainModel.DB_ENC_EXTENSION}";
             }
-            else dia.Filter = $"DB Datei| *{MainWindowViewModel.DBEXTENSION}";
+            else dia.Filter = $"DB Datei| *{MainModel.DBEXTENSION}";
             if (dia.ShowDialog() == true)
             {
                 return dia.FileName;
@@ -120,8 +121,8 @@ namespace WpfExplorer
             //Create File if not exists
             try
             {
-                if(!Directory.Exists(MainWindowViewModel.TEMP_LOCATION)) Directory.CreateDirectory(MainWindowViewModel.TEMP_LOCATION);
-                string path = Path.Combine(MainWindowViewModel.TEMP_LOCATION, DateTime.Now.ToString("yyyy-MM-dd") + ".log");
+                if(!Directory.Exists(MainModel.TEMP_LOCATION)) Directory.CreateDirectory(MainModel.TEMP_LOCATION);
+                string path = Path.Combine(MainModel.TEMP_LOCATION, DateTime.Now.ToString("yyyy-MM-dd") + ".log");
                 using (StreamWriter sw = (File.Exists(path)) ? File.AppendText(path) : File.CreateText(path))
                 {
                     string now = DateTime.Now.ToString("g");
@@ -130,7 +131,7 @@ namespace WpfExplorer
                     sw.Close();
                 }
             }
-            catch (Exception e) { MessageBox.Show($"Log-Dateien konnten nicht geschrieben werden. Prüfen Sie die Berechtigungen für das Verzeichnis {MainWindowViewModel.TEMP_LOCATION}\n\n{e}"); }
+            catch (Exception e) { MessageBox.Show($"Log-Dateien konnten nicht geschrieben werden. Prüfen Sie die Berechtigungen für das Verzeichnis {MainModel.TEMP_LOCATION}\n\n{e}"); }
 
         }
 

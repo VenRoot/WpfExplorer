@@ -15,6 +15,8 @@ using System.Windows.Interop;
 using WpfExplorer.ViewModel;
 using WpfExplorer.Modules;
 using System.Threading.Tasks;
+using WpfExplorer.Model;
+using System.Windows.Threading;
 #pragma warning disable 0649
 
 namespace WpfExplorer
@@ -35,9 +37,14 @@ namespace WpfExplorer
         {
             ((MainWindowViewModel)DataContext).tb_DatenbankFiles = $"{db.CountFiles()} Dateien in der Datenbank";
             ((MainWindowViewModel)DataContext).tb_IndizierteFiles = "";
-            MainWindowViewModel.instance.ready_Tick();
+            MainModel.instance.ready_Tick();
             USBDetector.Detect_Click(sender, e);
             fs.checkWindowColors(fs.Window.MainWindow);
+
+            DispatcherTimer dT = new DispatcherTimer();
+            dT.Tick += new EventHandler(MainModel.instance.SetPing);
+            dT.Interval = new TimeSpan(0, 0, 0);
+            dT.Start();
         }
     }
 }

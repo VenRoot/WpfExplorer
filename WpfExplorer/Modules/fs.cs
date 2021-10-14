@@ -15,6 +15,7 @@ using WpfExplorer.ViewModel;
 using WpfExplorer.Modules;
 using System.Diagnostics;
 using WpfExplorer.View;
+using WpfExplorer.Model;
 
 namespace WpfExplorer
 {
@@ -25,7 +26,7 @@ namespace WpfExplorer
         /** Prüft alle Dateien und erstellt diese, falls nicht vorhanden. Läuft im neuen Thread */
         public static void checkConfig()
         {
-            string path = MainWindowViewModel.CONFIG_LOCATIONS;
+            string path = MainModel.CONFIG_LOCATIONS;
             string[] files = { "config", "database", "usersettings" };
 
             Directory.CreateDirectory(path);
@@ -47,11 +48,11 @@ namespace WpfExplorer
                 }
             }
 
-            Directory.CreateDirectory(MainWindowViewModel.TEMP_LOCATION);
+            Directory.CreateDirectory(MainModel.TEMP_LOCATION);
 
             fs.C_IZ data = db.getConf<fs.C_IZ>("database");
             if (data.AUTH_KEY == null || data.AUTH_KEY.Length == 0) { data.AUTH_KEY = main.RandomString(64); }
-            MainWindowViewModel.AUTH_KEY = data.AUTH_KEY;
+            MainModel.AUTH_KEY = data.AUTH_KEY;
         }
         public enum Window
         {
@@ -63,16 +64,16 @@ namespace WpfExplorer
 
         public static void checkWindowColors(Window window)
         {
-            if (!File.Exists(Path.Combine(MainWindowViewModel.CONFIG_LOCATIONS, "usersettings.json"))) return;
+            if (!File.Exists(Path.Combine(MainModel.CONFIG_LOCATIONS, "usersettings.json"))) return;
 
             var converter = new System.Windows.Media.BrushConverter();
-            MainWindowViewModel.us = db.getConf<fs.C_UC>("usersettings");
+            MainModel.us = db.getConf<fs.C_UC>("usersettings");
 
             if (window == Window.MainWindow)
             {
                 var MainWin1 = MainWindow.instance;
                 var MainWin2 = MainWindowViewModel.instance;
-                if (MainWindowViewModel.us.DarkMode)
+                if (MainModel.us.DarkMode)
                 {
 
                     MainWin1.Background = (System.Windows.Media.Brush)converter.ConvertFromString("#252525");
@@ -100,7 +101,7 @@ namespace WpfExplorer
             else if (window == Window.Dialog)
             {
                 var MainWin1 = MessageDialog.instance;
-                if (MainWindowViewModel.us.DarkMode)
+                if (MainModel.us.DarkMode)
                 {
 
                     MainWin1.Color_Background = (System.Windows.Media.Brush)converter.ConvertFromString("#252525");
@@ -116,7 +117,7 @@ namespace WpfExplorer
             else if (window == Window.LogViewer)
             {
                 var MainWin1 = LogViewModel.instance;
-                if (MainWindowViewModel.us.DarkMode)
+                if (MainModel.us.DarkMode)
                 {
 
                     MainWin1.Color_Background = (System.Windows.Media.Brush)converter.ConvertFromString("#252525");
@@ -130,7 +131,7 @@ namespace WpfExplorer
             }
             else if (window == Window.UserSettings)
             {
-                if (MainWindowViewModel.us.DarkMode)
+                if (MainModel.us.DarkMode)
                 {
                     var win3 = UserSettingsViewModel.instance;
                     win3.Color_UserSettingsFore = (System.Windows.Media.Brush)converter.ConvertFromString("#FFFFFF");
@@ -139,8 +140,8 @@ namespace WpfExplorer
                     win3.Color_MiddleBorder = (System.Windows.Media.Brush)converter.ConvertFromString("#000000");
                     win3.Color_MiddleBorderBrush = (System.Windows.Media.Brush)converter.ConvertFromString("#FFFFFF");
                     win3.Color_Window = (System.Windows.Media.Brush)converter.ConvertFromString("#000000");
-                    win3.DarkModeCheck = MainWindowViewModel.us.DarkMode;
-                    win3.RecursiveCheck = MainWindowViewModel.us.Recursive;
+                    win3.DarkModeCheck = MainModel.us.DarkMode;
+                    win3.RecursiveCheck = MainModel.us.Recursive;
                 }
                 else
                 {
@@ -151,22 +152,22 @@ namespace WpfExplorer
                     win3.Color_MiddleBorder = (System.Windows.Media.Brush)converter.ConvertFromString("#FFFFFF");
                     win3.Color_MiddleBorderBrush = (System.Windows.Media.Brush)converter.ConvertFromString("#000000");
                     win3.Color_Window = (System.Windows.Media.Brush)converter.ConvertFromString("#FFFFFF");
-                    win3.DarkModeCheck = MainWindowViewModel.us.DarkMode;
-                    win3.RecursiveCheck = MainWindowViewModel.us.Recursive;
+                    win3.DarkModeCheck = MainModel.us.DarkMode;
+                    win3.RecursiveCheck = MainModel.us.Recursive;
                 }
             }
         }
 
         public static void checkUserSettings(bool initSettingsWindow)
         {
-            if(File.Exists(Path.Combine(MainWindowViewModel.CONFIG_LOCATIONS, "usersettings.json")))
+            if(File.Exists(Path.Combine(MainModel.CONFIG_LOCATIONS, "usersettings.json")))
             {
                 var converter = new System.Windows.Media.BrushConverter();
-                MainWindowViewModel.us = db.getConf<fs.C_UC>("usersettings");
+                MainModel.us = db.getConf<fs.C_UC>("usersettings");
                 var win2 = MainWindowViewModel.instance;
                 var win = MainWindow.instance;
                 
-                if (MainWindowViewModel.us.DarkMode)
+                if (MainModel.us.DarkMode)
                 {
                     win.Background = (System.Windows.Media.Brush)converter.ConvertFromString("#252525");
                     win2.Color_ExceptionLabel = (System.Windows.Media.Brush)converter.ConvertFromString("#FFFFFF");
@@ -185,8 +186,8 @@ namespace WpfExplorer
                         win3.Color_MiddleBorder = (System.Windows.Media.Brush)converter.ConvertFromString("#000000");
                         win3.Color_MiddleBorderBrush = (System.Windows.Media.Brush)converter.ConvertFromString("#FFFFFF");
                         win3.Color_Window = (System.Windows.Media.Brush)converter.ConvertFromString("#000000");
-                        win3.DarkModeCheck = MainWindowViewModel.us.DarkMode;
-                        win3.RecursiveCheck = MainWindowViewModel.us.Recursive;
+                        win3.DarkModeCheck = MainModel.us.DarkMode;
+                        win3.RecursiveCheck = MainModel.us.Recursive;
                     }
                     
                 }
@@ -211,8 +212,8 @@ namespace WpfExplorer
                         win3.Color_MiddleBorder = (System.Windows.Media.Brush)converter.ConvertFromString("#FFFFFF");
                         win3.Color_MiddleBorderBrush = (System.Windows.Media.Brush)converter.ConvertFromString("#000000");
                         win3.Color_Window = (System.Windows.Media.Brush)converter.ConvertFromString("#FFFFFF");
-                        win3.DarkModeCheck = MainWindowViewModel.us.DarkMode;
-                        win3.RecursiveCheck = MainWindowViewModel.us.Recursive;
+                        win3.DarkModeCheck = MainModel.us.DarkMode;
+                        win3.RecursiveCheck = MainModel.us.Recursive;
                     }
                     
                 }

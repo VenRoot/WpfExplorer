@@ -12,6 +12,7 @@ using Microsoft.Win32;
 using System.Windows.Input;
 using WpfExplorer.View;
 using System.Drawing;
+using WpfExplorer.Model;
 
 namespace WpfExplorer.ViewModel
 {
@@ -30,10 +31,11 @@ namespace WpfExplorer.ViewModel
         public event PropertyChangedEventHandler PropertyChanged;
         public UserSettingsViewModel()
         {
-            UserSettingsViewModel.instance = this;
+            instance = this;
             //windowTitle = title;
             this.CloseWindowCommand = new RelayCommand<Window>(this.CloseWindow);
         }
+        public static UserSettingsViewModel instance;
 
         protected bool SetProperty<T>(ref T field, T newValue, [CallerMemberName] string propertyName = null)
         {
@@ -53,16 +55,9 @@ namespace WpfExplorer.ViewModel
         {
             get
             {
-                if (oKButton == null) oKButton = new CommandHelper.RelayCommand(PerformOKButton);
+                if (oKButton == null) oKButton = new CommandHelper.RelayCommand(UserSettingsModel.instance.PerformOKButton);
                 return oKButton;
             }
-        }
-
-        private void PerformOKButton(object commandParameter)
-        {
-            fs.exportPassword = passwordText;
-            CloseWindowCommand.Execute(commandParameter);
-            
         }
 
         public RelayCommand<Window> CloseWindowCommand { get; private set; }
@@ -85,57 +80,7 @@ namespace WpfExplorer.ViewModel
         public bool DarkModeCheck { get => darkModeCheck; set
                 {
                     SetProperty(ref darkModeCheck, value);
-                MainWindow win = main.getSession<MainWindow>();
-                
-                
-                //UserSettingsWindow win2 = main.getSession<UserSettingsWindow>();
-                if (win != null)
-                {
-                    var converter = new System.Windows.Media.BrushConverter();
-                    var win2 = MainWindowViewModel.instance;
-                    //RecursiveCheck = MainWindowViewModel.us.Recursive;
-                    //DarkModeCheck = MainWindowViewModel.us.DarkMode;
-                    if (darkModeCheck)
-                    {
-                        win.Background = (System.Windows.Media.Brush)converter.ConvertFromString("#252525");
-                        win2.Color_ExceptionLabel = (System.Windows.Media.Brush)converter.ConvertFromString("#FFFFFF");
-                        win2.Color_FileExceptionList = (System.Windows.Media.Brush)converter.ConvertFromString("#FFFFFF");
-                        win2.Color_SuchFeldLabel = (System.Windows.Media.Brush)converter.ConvertFromString("#FFFFFF");
-                        win2.Color_tb_Ping = (System.Windows.Media.Brush)converter.ConvertFromString("#FFFFFF");
-                        win2.Color_FoundFiles = (System.Windows.Media.Brush)converter.ConvertFromString("#FFFFFF");
-                        win2.Color_tb_AddExceptions = (System.Windows.Media.Brush)converter.ConvertFromString("#FFFFFF");
-                        win2.Color_tb_Search = (System.Windows.Media.Brush)converter.ConvertFromString("#FFFFFF");
-
-                        Color_UserSettingsFore = (System.Windows.Media.Brush)converter.ConvertFromString("#FFFFFF");
-                        Color_CheckBox1Fore = (System.Windows.Media.Brush)converter.ConvertFromString("#FFFFFF");
-                        Color_CheckBox1Back = (System.Windows.Media.Brush)converter.ConvertFromString("#FFFFFF");
-                        Color_MiddleBorder = (System.Windows.Media.Brush)converter.ConvertFromString("#000000");
-                        Color_MiddleBorderBrush = (System.Windows.Media.Brush)converter.ConvertFromString("#FFFFFF");
-                        Color_Window = (System.Windows.Media.Brush)converter.ConvertFromString("#252525");
-                    }
-                    else
-                    {
-                        win.Background = (System.Windows.Media.Brush)converter.ConvertFromString("#FFFFFF");
-                        win2.Color_ExceptionLabel = (System.Windows.Media.Brush)converter.ConvertFromString("#000000");
-                        win2.Color_FileExceptionList = (System.Windows.Media.Brush)converter.ConvertFromString("#000000");
-                        win2.Color_SuchFeldLabel = (System.Windows.Media.Brush)converter.ConvertFromString("#000000");
-                        win2.Color_tb_Ping = (System.Windows.Media.Brush)converter.ConvertFromString("#000000");
-                        win2.Color_FoundFiles = (System.Windows.Media.Brush)converter.ConvertFromString("#000000");
-                        win2.Color_tb_AddExceptions = (System.Windows.Media.Brush)converter.ConvertFromString("#000000");
-                        win2.Color_tb_Search = (System.Windows.Media.Brush)converter.ConvertFromString("#000000");
-
-                        
-                        Color_UserSettingsFore = (System.Windows.Media.Brush)converter.ConvertFromString("#000000");
-                        Color_CheckBox1Fore = (System.Windows.Media.Brush)converter.ConvertFromString("#000000");
-                        Color_CheckBox1Back = (System.Windows.Media.Brush)converter.ConvertFromString("#000000");
-                        Color_MiddleBorder = (System.Windows.Media.Brush)converter.ConvertFromString("#FFFFFF");
-                        Color_MiddleBorderBrush = (System.Windows.Media.Brush)converter.ConvertFromString("#000000");
-                        Color_Window = (System.Windows.Media.Brush)converter.ConvertFromString("#FFFFFF");
-                    }
-                }
-                fs.C_UC conf = db.getConf<fs.C_UC>("usersettings");
-                conf.DarkMode = darkModeCheck;
-                db.setConf("usersettings", conf);
+                UserSettingsModel.instance.DarkModeCheck();
             }
         }
 
@@ -144,7 +89,7 @@ namespace WpfExplorer.ViewModel
 
         }
 
-        public static UserSettingsViewModel instance;
+        
 
         private RelayCommand<Window> importButton;
 
@@ -154,19 +99,14 @@ namespace WpfExplorer.ViewModel
             {
                 if (importButton == null)
                 {
-                    importButton = new RelayCommand<Window>(PerformImportButton);
+                    importButton = new RelayCommand<Window>(UserSettingsModel.instance.PerformImportButton);
                 }
 
                 return importButton;
             }
         }
 
-        private void PerformImportButton(object commandParameter)
-        {
-            var path = new OpenFileDialog();
-            path.ShowDialog();
-            fs.import(path.FileName);
-        }
+        
 
         private RelayCommand<Window> exportButton;
 
@@ -176,17 +116,14 @@ namespace WpfExplorer.ViewModel
             {
                 if (exportButton == null)
                 {
-                    exportButton = new RelayCommand<Window>(PerformExportButton);
+                    exportButton = new RelayCommand<Window>(UserSettingsModel.instance.PerformExportButton);
                 }
 
                 return exportButton;
             }
         }
 
-        private void PerformExportButton(object commandParameter)
-        {
-            fs.export();
-        }
+        
 
         private System.Windows.Media.Brush color_Window;
 

@@ -10,6 +10,7 @@ using MySql.Data.MySqlClient;
 using WpfExplorer.ViewModel;
 using System.Collections.ObjectModel;
 using Npgsql;
+using WpfExplorer.Model;
 
 namespace WpfExplorer
 {
@@ -24,7 +25,7 @@ namespace WpfExplorer
 
             try
             {
-                r = new StreamReader(MainWindowViewModel.CONFIG_LOCATIONS + $"{name}.json");
+                r = new StreamReader(MainModel.CONFIG_LOCATIONS + $"{name}.json");
                 json = r.ReadToEnd(); r.Close();
                 return JsonConvert.DeserializeObject<T>(json);
 
@@ -53,7 +54,7 @@ namespace WpfExplorer
             try
             {
                 string _ = JsonConvert.SerializeObject(text);
-                fs.writeFileSync(MainWindowViewModel.CONFIG_LOCATIONS + $"{name}.json", _, true);
+                fs.writeFileSync(MainModel.CONFIG_LOCATIONS + $"{name}.json", _, true);
                 return;
             }
             catch (Exception e) { main.ReportError(e, main.status.error); throw; }
@@ -90,17 +91,17 @@ namespace WpfExplorer
 
             if (fetch() == 0) return false;
 
-            MainWindowViewModel.AUTH_KEY = data.AUTH_KEY;
-            var last_sync = myquery($"SELECT last_sync from users WHERE ID = @val1", new string[] {MainWindowViewModel.AUTH_KEY});
+            MainModel.AUTH_KEY = data.AUTH_KEY;
+            var last_sync = myquery($"SELECT last_sync from users WHERE ID = @val1", new string[] { MainModel.AUTH_KEY });
             if (last_sync.Count == 0)
             {
                 string dt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-                myquery($"INSERT INTO users(ID, last_sync) VALUES(@val1, @val2)", new string[] {MainWindowViewModel.AUTH_KEY, dt});
+                myquery($"INSERT INTO users(ID, last_sync) VALUES(@val1, @val2)", new string[] { MainModel.AUTH_KEY, dt});
                 data.last_sync = dt;
                 setConf("database", data);
                 return false;
             }
-            var dbc = myquery($"SELECT PATH FROM data WHERE ID = @val1", new string[] { MainWindowViewModel.AUTH_KEY });
+            var dbc = myquery($"SELECT PATH FROM data WHERE ID = @val1", new string[] { MainModel.AUTH_KEY });
             
             for(int i = 0; i < dbc.Count; i++) fs.AddToIndex(dbc[i]);
             data.last_sync = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
@@ -113,14 +114,14 @@ namespace WpfExplorer
         /// </summary>
         public static int fetch()
         {
-            if (MainWindowViewModel.AUTH_KEY.Length == 0) MainWindowViewModel.AUTH_KEY = main.RandomString(64);
+            if (MainModel.AUTH_KEY.Length == 0) MainModel.AUTH_KEY = main.RandomString(64);
             string dt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
             fs.C_IZ data = db.getConf<fs.C_IZ>("database");
-            var last_sync = myquery($"SELECT last_sync FROM users WHERE ID = @val1", new string[] { MainWindowViewModel.AUTH_KEY });
+            var last_sync = myquery($"SELECT last_sync FROM users WHERE ID = @val1", new string[] { MainModel.AUTH_KEY });
             if (last_sync.Count == 0)
             {
 
-                myquery($"INSERT INTO users(ID, last_sync) VALUES(@val1, @val2)", new string[] { MainWindowViewModel.AUTH_KEY, dt });
+                myquery($"INSERT INTO users(ID, last_sync) VALUES(@val1, @val2)", new string[] { MainModel.AUTH_KEY, dt });
                 return -1;
             }
             DateTime dbTime = Convert.ToDateTime(last_sync[0]);
@@ -139,7 +140,6 @@ namespace WpfExplorer
         {
             if (fetch() == 1) return false;
             string dt = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-            var window = MainWindowViewModel.instance;
             while (main.isIndexerRunning) ;
             fs.C_IZ data = db.getConf<fs.C_IZ>("database");
             int totalFiles = data.Paths.Count;
@@ -147,7 +147,7 @@ namespace WpfExplorer
 
             int cFile = 0;
             //string datar = JsonConvert.SerializeObject(data);
-            myquery($"DELETE FROM data WHERE ID = @val1", new [] { MainWindowViewModel.AUTH_KEY });
+            myquery($"DELETE FROM data WHERE ID = @val1", new [] { MainModel.AUTH_KEY });
             for(int i = 0; i < data.Paths.Count; i++)
             {
                 for(int o = 0; o < data.Paths[i].Files.Count; o++)
@@ -155,20 +155,20 @@ namespace WpfExplorer
                     cFile++;
                     //4 Backslashes, damit die in der DB nicht verloren gehen
                     data.Paths[i].Files[o].FullPath = data.Paths[i].Files[o].FullPath.Replace("\\", "\\\\");
-                    window.SetIndexProgress(data.Paths[i].Files[o].Name, cFile, totalFiles);
+                    MainModel.instance.SetIndexProgress(data.Paths[i].Files[o].Name, cFile, totalFiles);
                     var content = data.Paths[i].Files[o].Content ?? "";
                     content = content.Replace('"', '\"');
-                    myquery($"INSERT INTO data (ID, PATH, CONTENT) VALUES (@val1, @val2, @val3)", new string[]{ MainWindowViewModel.AUTH_KEY, data.Paths[i].Files[o].FullPath, content});
+                    myquery($"INSERT INTO data (ID, PATH, CONTENT) VALUES (@val1, @val2, @val3)", new string[]{ MainModel.AUTH_KEY, data.Paths[i].Files[o].FullPath, content});
                     //Display(totalFiles, cFile.ToString(), data.Paths[i].Files[o]);
                 }
             }
 
             //Query die abfragt, ob der Pfad existiert
-            myquery($"UPDATE users SET last_sync = @val1 WHERE ID = @val2", new string[] { dt, MainWindowViewModel.AUTH_KEY });
+            myquery($"UPDATE users SET last_sync = @val1 WHERE ID = @val2", new string[] { dt, MainModel.AUTH_KEY });
             var tmp_db = getConf<fs.C_IZ>("database");
             tmp_db.last_sync = dt;
             setConf("database", tmp_db);
-            //myquery($"INSERT INTO data (ID, PATH, CONTENT) VALUES ('{MainWindowViewModel.AUTH_KEY}', ) WHERE ID = '{MainWindowViewModel.AUTH_KEY}'");
+            //myquery($"INSERT INTO data (ID, PATH, CONTENT) VALUES ('{MainModel.AUTH_KEY}', ) WHERE ID = '{MainModel.AUTH_KEY}'");
             return true;
         }
 

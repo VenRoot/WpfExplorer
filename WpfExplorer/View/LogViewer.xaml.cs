@@ -11,6 +11,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using WpfExplorer.Model;
 using WpfExplorer.ViewModel;
 
 namespace WpfExplorer.View
@@ -30,9 +31,9 @@ namespace WpfExplorer.View
         {
 
             fs.checkWindowColors(fs.Window.LogViewer);
-            LogViewModel.instance.fillLogs();
+            LogModel.instance.fillLogs();
         }
 
-        new void MouseWheel(object sender, MouseWheelEventArgs e) => LogViewModel.instance.MouseWheel(sender, e);
+        new void MouseWheel(object sender, MouseWheelEventArgs e) => LogModel.instance.MouseWheel(sender, e);
     }
 }
